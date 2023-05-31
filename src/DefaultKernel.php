@@ -2,52 +2,55 @@
 namespace Lubed\MVCKernel;
 
 use Lubed\Supports\Kernel;
+use Lubed\Reflections\{ReflectionFactory,ReflectionFactoryAware,DefaultReflectionFactory};
 
-final class DefaultKernel implements Kernel
+final class DefaultKernel implements Kernel, ReflectionFactoryAware
 {
+    private $is_init;
+    private $controller;
+    private $action;
+    private $interceptors;
+    private $reflection_factory;
+    private $request;
+
 	public function __construct() {
+        $this->is_init=false;
+        $this->setReflectionFactory(new DefaultReflectionFactory());
 	}
 
-	public function boot(&$result)
-	{
-        if (!method_exists($controller, $action_handler)) {
-            MVCExceptions::invalidActionHandler(sprintf('%s.%s:No valid action handler found:%s ',__CLASS__,__METHOD__,$action_handler));
+    public function init($callee,$request){
+        $this->controller = $callee[0]??'';
+        $this->action = $callee[1]??'';
+        $this->interceptors = [];
+
+        if (!method_exists($this->controller, $this->action)) {
+            MVCExceptions::invalidActionHandler(sprintf('%s.%s:No valid action handler found:%s ',__CLASS__,__METHOD__,$this->action));
         }
 
-        $interceptors = $this->dispatcher_info->interceptors;
-        $passed = true;
-        $result = NULL;
-        //Before Controller->action() call
-        foreach ($interceptors as $interceptor) {
-            $result = $interceptor->beforeIntercept($action, $controller);
+        $this->is_init=true;
+    }
 
-            if ($result instanceof View) {
-                return $result;
-            }
-
-            if (false === $result) {
-                $passed = false;
-                break;
-            }
+	public function boot(&$result){
+        if (!$this->is_init) {
+            MVCExceptions::invalidActionHandler('Kernel before boot must init it first.');  
         }
 
-        if ($passed) {
-            return $result;
-        }
+        $result=$this->invokeAction($this->controller, $this->action, []);
 
-        $result=$this->invokeAction($controller, $actionHandler, $action->getArguments());
-
-        //After Controller->action() call
-        foreach ($interceptors as $interceptor) {
-            $interceptor->afterIntercept($action, $controller);
-        }
         return $result;
-	}
+    }
 
-    private function invokeAction($object, string $method, array $arguments) {
-        $ctl=get_class($object);
-        $methodInfo=$this->reflection_factory->getMethod($ctl, $method);
-        $parameters=$methodInfo->getParameters();
+    public function setReflectionFactory(ReflectionFactory $reflection_factory) {
+        $this->reflection_factory=$reflection_factory;
+    }
+
+    private function invokeAction($ctl, string $method, array $arguments) {
+        if(!$ctl||!$method){
+           MVCExceptions::invalidActionHandler("Invalid method(%s->%s).",$ctl,$method);   
+        }
+
+        $rf_method=$this->reflection_factory->getMethod($ctl, $method);
+        $parameters=$rf_method->getParameters();
         $values=[];
         $total=count($parameters);
 
@@ -60,13 +63,16 @@ final class DefaultKernel implements Kernel
                 $values[] = $parameter->getDefaultValue();
             } else {
                 MVCExceptions::missRequiredArgument(
-                    vsprintf("%s.%s:Missing required argument: %s for action %s:%s",[
-                        __CLASS__, __METHOD__, $name, $ctl, $method
-                    ])
+                    sprintf("Missing required argument: %s for action %s:%s",$name, $ctl, $method),
+                    [
+                        'class'=>__CLASS__, 'method'=>__METHOD__,
+                    ]
                 );
             }
         }
-
-        return $methodInfo->invokeArgs($object, $values);
+        //TODO:.....
+        $controller = new $ctl();
+        $controller->init($this->request);
+        return $rf_method->invokeArgs($controller, $values);
     }
 }
