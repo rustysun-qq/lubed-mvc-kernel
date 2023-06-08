@@ -11,7 +11,8 @@
         "lubed/exceptions": "dev-main",
         "lubed/container":"dev-main",
         "lubed/http": "dev-main",
-        "lubed/template": "dev-main"
+        "lubed/template": "dev-main",
+        "lubed/reflections": "dev-main"
     },
     "config": {},
     "autoload": {
