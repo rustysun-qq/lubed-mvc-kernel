@@ -11,7 +11,6 @@
         "lubed/exceptions": "dev-main",
         "lubed/container":"dev-main",
         "lubed/http": "dev-main",
-        "lubed/template-blade-parser": "dev-main",
         "lubed/template": "dev-main"
     },
     "config": {},
