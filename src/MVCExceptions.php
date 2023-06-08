@@ -5,8 +5,14 @@ use Lubed\Exceptions\RuntimeException;
 
 final class MVCExceptions
 {
-	const INVALID_ACTION_HANDLER=101401;
-	const MISS_REQUIRED_ARGUMENT=101402;
+	const START_FAILED=10401;
+	const INVALID_ACTION_HANDLER=101411;
+	const MISS_REQUIRED_ARGUMENT=101412;
+
+	public static function startFailed(string $msg):RuntimeException
+	{
+		throw new RuntimeException(self::START_FAILED, $msg);
+	}
 
 	public static function invalidActionHandler(string $msg):RuntimeException
 	{

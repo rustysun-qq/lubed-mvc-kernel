@@ -12,19 +12,32 @@ final class DefaultKernel implements Kernel, ReflectionFactoryAware
     private $interceptors;
     private $reflection_factory;
     private $request;
+    private $view;
 
-	public function __construct() {
+	public function __construct()
+    {
         $this->is_init=false;
         $this->setReflectionFactory(new DefaultReflectionFactory());
 	}
 
-    public function init($callee,$request){
+    public function getRequest(){
+        return $this->request;
+    }
+
+    public function setRequest($request):self
+    {
+        $this->request = $request;
+        return $this;
+    }
+
+    public function init($callee)
+    {
         $this->controller = $callee[0]??'';
         $this->action = $callee[1]??'';
         $this->interceptors = [];
 
         if (!method_exists($this->controller, $this->action)) {
-            MVCExceptions::invalidActionHandler(sprintf('%s.%s:No valid action handler found:%s ',__CLASS__,__METHOD__,$this->action));
+            MVCExceptions::invalidActionHandler(sprintf('%s:No valid action handler found:%s ',__METHOD__,$this->action));
         }
 
         $this->is_init=true;
@@ -44,8 +57,13 @@ final class DefaultKernel implements Kernel, ReflectionFactoryAware
         $this->reflection_factory=$reflection_factory;
     }
 
+    public function registerView($view)
+    {
+        $this->view = $view;
+    }
+
     private function invokeAction($ctl, string $method, array $arguments) {
-        if(!$ctl||!$method){
+        if(!$ctl || !$method){
            MVCExceptions::invalidActionHandler("Invalid method(%s->%s).",$ctl,$method);   
         }
 
@@ -64,15 +82,14 @@ final class DefaultKernel implements Kernel, ReflectionFactoryAware
             } else {
                 MVCExceptions::missRequiredArgument(
                     sprintf("Missing required argument: %s for action %s:%s",$name, $ctl, $method),
-                    [
-                        'class'=>__CLASS__, 'method'=>__METHOD__,
-                    ]
+                    ['method'=>__METHOD__]
                 );
             }
         }
         //TODO:.....
         $controller = new $ctl();
         $controller->init($this->request);
+        $controller->setView($this->view);
         return $rf_method->invokeArgs($controller, $values);
     }
 }

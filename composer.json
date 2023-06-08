@@ -4,15 +4,17 @@
     "license": "proprietary",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.2",
+        "php": ">=8.0",
         "ext-json": "*",
         "lubed/utils": "dev-main",
         "lubed/supports": "dev-main",
         "lubed/exceptions": "dev-main",
-        "lubed/exceptions": "dev-main",
+        "lubed/container":"dev-main",
+        "lubed/http": "dev-main",
+        "lubed/template-blade-parser": "dev-main",
+        "lubed/template": "dev-main"
     },
-    "config": {
-    },
+    "config": {},
     "autoload": {
         "psr-4": {
             "Lubed\\MVCKernel\\": "src/"
@@ -20,7 +22,7 @@
     },
     "extra": {
         "lubed":{
-            "starter":"\\Lubed\\MVCKernel\\DefaultStarter"
+            "starter":"\\Lubed\\MVCKernel\\MVCStarter"
         }
     }
 }
