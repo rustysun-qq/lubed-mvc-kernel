@@ -3,18 +3,18 @@ namespace Lubed\MVCKernel;
 
 use stdClass;
 use Lubed\Template\{TemplatePath,TemplateCompiler,DefaultCompiler,TemplateParser};
-use Lubed\Utils\{Buffer,Config};
+use Lubed\Utils\{OutputBuffer,Config};
 
 class HtmlViewRenderer implements ViewRenderer {
-    private $suffix = '.html';
+    private $suffix = '.php';
     private $compiler;
     private $path;
     private $data;
 
     public function __construct(Config $path,TemplateParser $parser)
     {
-        $template_path = new TemplatePath($path->get('source'),$path->get('cached'));
-        $this->compiler = new DefaultCompiler($template_path, $parser);
+        $this->path = new TemplatePath($path->get('source'),$path->get('cached'));
+        $this->compiler = new DefaultCompiler($this->path, $parser);
         $this->data = [
             'layouts' => [],
             'blocks'  => [],
@@ -47,28 +47,31 @@ class HtmlViewRenderer implements ViewRenderer {
         $viewFile = $view . $this->suffix;
         $compiler = $this->compiler;
         $data = $this->data['vars']??[];
-        $this->renderer->loadViewFile($view_file, $data, $compiler);
+        ($this->renderer->loadViewFile)($view_file, $data, $compiler,$this->renderer->renderer);
     }
 
     public function render(string $view):string
     {
-        $view_file = sprintf('%s%s', $view, $this->suffix);
+        $view_file = sprintf('%s/%s%s',$this->path->getSourcePath(), $view, $this->suffix);
         $compiler = $this->compiler;
         $data = $this->data;
-        $buffer = new Buffer();
+        $buffer = new OutputBuffer();
         //renderer closure
-        $fn_renderer = function(object $renderer,string $view_file,array $data,TemplateCompiler $compiler,Buffer $buffer){
-
-            return $renderer->renderViewFile($view_file,$data,$compiler,$buffer);
+        $fn_renderer = function(object $renderer,string $view_file,array $data,TemplateCompiler $compiler,object $buffer){
+            return ($renderer->renderer)($view_file,$data,$compiler,$buffer);
         };
         //render view file
         return $fn_renderer($this->renderer,$view_file,$data,$compiler,$buffer);
     }
 
+    public function setSuffix(string $suffix):void{
+        $this->suffix=$suffix;
+    }
+
     private function init(){
         $this->renderer->blockPre='%%BLOCK__';
         $this->renderer->blockSuf='__BLOCK%%';
-        $this->renderer->renderViewFile = function(string $filename,?array $vars){
+        $this->renderer->renderer = function(string $filename,?array $vars){
             if (!$filename) {
                 return;
             }
@@ -80,16 +83,16 @@ class HtmlViewRenderer implements ViewRenderer {
             require $filename;
         };
 
-        $this->renderer->loadViewFile=function(string $view_file, array $data, TemplateCompiler $compiler){
+        $this->renderer->loadViewFile=function(string $view_file, array $data, TemplateCompiler $compiler,$renderer){
             $file = str_replace('\\', '/', $view_file);
             $compiled_file = $compiler->compile($file);
-            $this->renderFile($compiled_file,$data);
+            $renderer($compiled_file,$data);
         };
 
-        $this->renderer->renderViewFile=function(string $view_file, array $data, TemplateCompiler $compiler, Buffer $buffer){
+        $this->renderer->renderViewFile=function(string $view_file, array $data, TemplateCompiler $compiler, OutputBuffer $buffer,$renderer){
             $compiled_file = $compiler->compile($view_file);
             $buffer::start();
-            $this->renderFile($compiled_file);
+            $renderer($compiled_file);
             $result = $buffer::getAndClean();
             //parse layout
             $keys = array_keys($data['layouts']);

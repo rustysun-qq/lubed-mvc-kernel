@@ -3,7 +3,7 @@ namespace Lubed\MVCKernel;
 
 use lubed\Http\Uri;
 use Lubed\MVCKernel\Utils\URL;
-use Lubed\Utils\{Buffer,Config};
+use Lubed\Utils\{OutputBuffer,Config};
 
 abstract class AbstractView {
     protected $renderer;
@@ -39,7 +39,7 @@ abstract class AbstractView {
     }
 
     public function end() {
-        Buffer::clean();
+        OutputBuffer::clean();
     }
 
     public function beginBlock($block_name, $val = NULL) {
@@ -48,11 +48,11 @@ abstract class AbstractView {
         if (NULL !== $val) {
             $this->data['blocks'][$this->curBlock] = $val;
         }
-        Buffer::start();
+        OutputBuffer::start();
     }
 
     public function endBlock() {
-        $content = Buffer::getAndClean();
+        $content = OutputBuffer::getAndClean();
         if (!isset($this->data['blocks'][$this->curBlock])) {
             echo $this->renderer->getBlockName($this->curBlock);
         }
@@ -63,7 +63,7 @@ abstract class AbstractView {
         $block_name = strtoupper($block_name);
         if (isset($this->data['blocks'][$block_name])) {
             $this->curLayout = $block_name;
-            Buffer::start();
+            OutputBuffer::start();
         } else {
             $this->curLayout = NULL;
         }
@@ -74,13 +74,16 @@ abstract class AbstractView {
             //TODO:
             //return FALSE;
         }
-        $content = Buffer::getAndClean();
+        $content = OutputBuffer::getAndClean();
         $this->data['layouts'][$this->curLayout] = trim($content);
         $this->curLayout = NULL;
     }
 
     public function load(string $view):string{
         $this->renderer->load($view);
+    }
+    public function render(string $view):string{
+        $this->renderer->render($view);
     }
 
     public function place(string $block) {
@@ -126,5 +129,10 @@ abstract class AbstractView {
         $slug = str_replace(" ", "-", $original);
         $slug = preg_replace('/[^\w\d\-\_]/i', '', $slug);
         return strtolower($slug);
+    }
+
+    public function withSuffix(string $suffix):self{
+        $this->renderer->setSuffix($suffix);
+        return $this;
     }
 }
