@@ -29,7 +29,7 @@ class HtmlViewRenderer implements ViewRenderer {
     {
         $view_file = $view . $this->suffix;
         $compiler = $this->compiler;
-        $data = $this->data;
+        $data = $this->data['vars']??[];
         ($this->renderer->loadViewFile)($view_file, $data, $compiler,$this->renderer->renderer);
     }
 
