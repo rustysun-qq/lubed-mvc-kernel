@@ -29,22 +29,19 @@ class HtmlViewRenderer implements ViewRenderer {
     {
         $view_file = $view . $this->suffix;
         $compiler = $this->compiler;
-        $data = $this->data['vars']??[];
-        ($this->renderer->loadViewFile)($view_file, $data, $compiler,$this->renderer->renderer);
+        $data = $this->data;
+        ($this->renderer->loadViewFile)($view_file, $data, $compiler,$this->renderer->import);
     }
 
     public function render(string $view):string
     {
-        $view_file = sprintf('%s/%s%s',$this->path->getSourcePath(), $view, $this->suffix);
+        $view_file = sprintf('%s%s', $view, $this->suffix);
+        var_dump($view);
         $compiler = $this->compiler;
         $data = $this->data;
         $buffer = new OutputBuffer();
-        //renderer closure
-        $fn_renderer = function(object $renderer,string $view_file,array $data,TemplateCompiler $compiler,object $buffer){
-            return ($renderer->renderer)($view_file,$data['vars']??[],$compiler,$buffer);
-        };
-        //render view file
-        return $fn_renderer($this->renderer,$view_file,$data,$compiler,$buffer);
+
+        return ($this->renderer->renderViewFile)($view_file,$data,$compiler,$buffer,$this->renderer->import);
     }
 
     public function setSuffix(string $suffix):void{
@@ -54,7 +51,7 @@ class HtmlViewRenderer implements ViewRenderer {
     private function init(){
         $this->renderer->blockPre='%%BLOCK__';
         $this->renderer->blockSuf='__BLOCK%%';
-        $this->renderer->renderer = function(string $filename,?array $vars){
+        $this->renderer->import = function(string $filename,?array $vars){
             if (!$filename) {
                 return;
             }
@@ -66,16 +63,16 @@ class HtmlViewRenderer implements ViewRenderer {
             require $filename;
         };
 
-        $this->renderer->loadViewFile=function(string $view_file, array $data, TemplateCompiler $compiler,$renderer){
+        $this->renderer->loadViewFile=function(string $view_file, array $data, TemplateCompiler $compiler,callable $import){
             $file = str_replace('\\', '/', $view_file);
             $compiled_file = $compiler->compile($file);
-            $renderer($compiled_file,$data);
+            $import($compiled_file,$data['vars']??[]);
         };
 
-        $this->renderer->renderViewFile=function(string $view_file, array $data, TemplateCompiler $compiler, OutputBuffer $buffer,$renderer){
+        $this->renderer->renderViewFile=function(string $view_file, array $data, TemplateCompiler $compiler, OutputBuffer $buffer,callable $import){
             $compiled_file = $compiler->compile($view_file);
             $buffer::start();
-            $renderer($compiled_file,$data);
+            $import($compiled_file,$data['vars']??[]);
             $result = $buffer::getAndClean();
             //parse layout
             $keys = array_keys($data['layouts']);

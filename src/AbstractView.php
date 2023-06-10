@@ -79,11 +79,12 @@ abstract class AbstractView {
         $this->curLayout = NULL;
     }
 
-    public function load(string $view):string{
+    public function load(string $view){
         $this->renderer->load($view);
     }
+
     public function render(string $view):string{
-        $this->renderer->render($view);
+        return $this->renderer->render($view);
     }
 
     public function place(string $block) {
