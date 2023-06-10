@@ -18,11 +18,11 @@ abstract class AbstractView {
     protected $compiler;
 
     public function __construct(Uri $uri,Config $path) {
+        $this->setPath($path);
+        $this->uri = $uri;
         $this->data['vars'] = [
             'view' => &$this,
         ];
-        $this->setPath($path);
-        $this->uri = $uri;
     }
 
     public function assign(string $name, $value = NULL): void {

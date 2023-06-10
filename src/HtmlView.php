@@ -10,6 +10,6 @@ class HtmlView extends AbstractView
 {
     public function __construct(Uri $uri,Config $path,TemplateParser $parser=NULL){
         parent::__construct($uri,$path);
-        $this->renderer = new HtmlViewRenderer($path,$parser);
+        $this->renderer = new HtmlViewRenderer($path, $parser, $this->data);
     }
 }

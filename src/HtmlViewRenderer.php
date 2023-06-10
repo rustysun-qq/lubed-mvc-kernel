@@ -11,30 +11,13 @@ class HtmlViewRenderer implements ViewRenderer {
     private $path;
     private $data;
 
-    public function __construct(Config $path,TemplateParser $parser)
+    public function __construct(Config $path,TemplateParser $parser,array &$data)
     {
         $this->path = new TemplatePath($path->get('source'),$path->get('cached'));
         $this->compiler = new DefaultCompiler($this->path, $parser);
-        $this->data = [
-            'layouts' => [],
-            'blocks'  => [],
-            'vars'    => [],
-        ];
+        $this->data = $data;
         $this->renderer = new stdClass();
         $this->init();
-    }
-
-    public function assign(string $name, $value = NULL): void {
-        if ('view' !== $name) { //protected 'view' variable.
-            if (is_array($name) && $name) {
-                unset($name['view']);
-                $this->data['vars'] = array_merge($this->data['vars'], $name);
-            } else {
-                $this->data['vars'][$name] = $value;
-            }
-        } else {
-            //TODO: throw execption.
-        }
     }
 
     public function getBlockName(string $name):string
@@ -44,9 +27,9 @@ class HtmlViewRenderer implements ViewRenderer {
 
     public function load(string $view):void
     {
-        $viewFile = $view . $this->suffix;
+        $view_file = $view . $this->suffix;
         $compiler = $this->compiler;
-        $data = $this->data['vars']??[];
+        $data = $this->data;
         ($this->renderer->loadViewFile)($view_file, $data, $compiler,$this->renderer->renderer);
     }
 
@@ -58,7 +41,7 @@ class HtmlViewRenderer implements ViewRenderer {
         $buffer = new OutputBuffer();
         //renderer closure
         $fn_renderer = function(object $renderer,string $view_file,array $data,TemplateCompiler $compiler,object $buffer){
-            return ($renderer->renderer)($view_file,$data,$compiler,$buffer);
+            return ($renderer->renderer)($view_file,$data['vars']??[],$compiler,$buffer);
         };
         //render view file
         return $fn_renderer($this->renderer,$view_file,$data,$compiler,$buffer);
@@ -92,7 +75,7 @@ class HtmlViewRenderer implements ViewRenderer {
         $this->renderer->renderViewFile=function(string $view_file, array $data, TemplateCompiler $compiler, OutputBuffer $buffer,$renderer){
             $compiled_file = $compiler->compile($view_file);
             $buffer::start();
-            $renderer($compiled_file);
+            $renderer($compiled_file,$data);
             $result = $buffer::getAndClean();
             //parse layout
             $keys = array_keys($data['layouts']);
