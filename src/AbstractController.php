@@ -9,12 +9,15 @@ abstract class AbstractController implements Controller
 	private function __clone()
 	{}
 
-	public function __construct()
-	{}
-
-	public function init($request)
+	public function __construct($request)
 	{
-		$this->request = $request;
+        $this->request = $request;
+        $this->init();
+    }
+
+	public function init()
+	{
+
 	}
 
 	public function setView($view)

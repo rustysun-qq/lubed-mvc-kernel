@@ -87,8 +87,8 @@ final class DefaultKernel implements Kernel, ReflectionFactoryAware
             }
         }
         //TODO:.....
-        $controller = new $ctl();
-        $controller->init($this->request);
+        $controller = new $ctl($this->request);
+        $controller->init();
         $controller->setView($this->view);
         return $rf_method->invokeArgs($controller, $values);
     }
