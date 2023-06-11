@@ -1,27 +1,20 @@
 <?php
 namespace Lubed\MVCKernel;
+abstract class AbstractController implements Controller {
+    protected $request;
+    protected $view;
 
-abstract class AbstractController implements Controller
-{
-	protected $request;
-	protected $view;
+    private function __clone() {
+    }
 
-	private function __clone()
-	{}
-
-	public function __construct($request)
-	{
-        $this->request = $request;
+    public function __construct($request) {
+        $this->request=$request;
         $this->init();
     }
 
-	public function init()
-	{
+    abstract function init();
 
-	}
-
-	public function setView($view)
-	{
-		$this->view = $view;
-	}
+    public function setView($view) {
+        $this->view=$view;
+    }
 }

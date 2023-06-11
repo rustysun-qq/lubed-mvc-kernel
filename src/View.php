@@ -1,5 +1,9 @@
 <?php
 namespace Lubed\MVCKernel;
-//TODO：？？？
 interface View {
+    public function load(string $name);
+
+    public function render();
+
+    public function setData(array $data);
 }

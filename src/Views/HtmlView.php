@@ -1,6 +1,8 @@
 <?php
 namespace Lubed\MVCKernel\Views;
-class HtmlView {
+use Lubed\MVCKernel\View;
+
+class HtmlView implements View {
     protected $data;
     protected $suffix;
     protected $layout;
