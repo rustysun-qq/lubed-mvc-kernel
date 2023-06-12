@@ -1,7 +1,7 @@
 <?php
 namespace Lubed\MVCKernel;
 use Lubed\Http\Request;
-use Lubed\HttpApplication\RedirectResponse;
+use Lubed\Http\RedirectResponse;
 
 abstract class AbstractController implements Controller {
     /**
