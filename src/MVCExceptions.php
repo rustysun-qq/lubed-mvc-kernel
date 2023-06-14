@@ -8,6 +8,7 @@ final class MVCExceptions
 	const START_FAILED=10401;
 	const INVALID_ACTION_HANDLER=101411;
 	const MISS_REQUIRED_ARGUMENT=101412;
+    const INVALID_VIEW_BLOCK=101413;
 
 	public static function startFailed(string $msg):RuntimeException
 	{
@@ -23,4 +24,9 @@ final class MVCExceptions
 	{
 		throw new RuntimeException(self::MISS_REQUIRED_ARGUMENT, $msg);
 	}
+
+    public static function invalidBlock(string $msg):RuntimeException
+    {
+        throw new RuntimeException(self::INVALID_VIEW_BLOCK, $msg);
+    }
 }
