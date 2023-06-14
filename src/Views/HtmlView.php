@@ -24,7 +24,7 @@ class HtmlView implements View {
     }
 
     public function render() {
-        $this->tpl->setData($this->getData());
+        $this->tpl->clearData()->setData($this->getData());
         return $this->layout->render();
     }
 
@@ -35,7 +35,7 @@ class HtmlView implements View {
 
     private function getData() {
         $loaders=[
-            'tpl'=>$this->tpl,
+            //'tpl'=>$this->tpl,
             'view'=>$this->layout,
         ];
         return array_merge($loaders, $this->data);
