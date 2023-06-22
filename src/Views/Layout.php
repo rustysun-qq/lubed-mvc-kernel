@@ -116,8 +116,6 @@ class Layout {
         return $this->blockQueue[$lastIdx];
     }
 
-
-
     private function addBlockToLevelMap($blockName, $level=0) {
         if (!isset($this->blockLevelMap[$level])) {
             $this->blockLevelMap[$level]=[];

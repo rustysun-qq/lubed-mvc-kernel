@@ -12,7 +12,8 @@
         "lubed/container":"dev-main",
         "lubed/http": "dev-main",
         "lubed/template": "dev-main",
-        "lubed/reflections": "dev-main"
+        "lubed/reflections": "dev-main",
+        "lubed/router": "dev-main"
     },
     "config": {},
     "autoload": {
