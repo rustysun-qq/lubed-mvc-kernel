@@ -3,17 +3,18 @@
     "type": "project",
     "license": "proprietary",
     "prefer-stable": true,
+    "version": "0.2",
     "require": {
         "php": ">=8.0",
         "ext-json": "*",
-        "lubed/utils": "dev-main",
-        "lubed/supports": "dev-main",
-        "lubed/exceptions": "dev-main",
-        "lubed/container":"dev-main",
-        "lubed/http": "dev-main",
-        "lubed/template": "dev-main",
-        "lubed/reflections": "dev-main",
-        "lubed/router": "dev-main"
+        "lubed/utils": "0.2",
+        "lubed/supports": "0.2",
+        "lubed/exceptions": "0.2",
+        "lubed/container":"0.2",
+        "lubed/http": "0.2",
+        "lubed/template": "0.2",
+        "lubed/reflections": "0.2",
+        "lubed/router": "0.2"
     },
     "config": {},
     "autoload": {
